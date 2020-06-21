@@ -1,0 +1,8 @@
+
+    /**
+     * ${column_comment}
+     */
+    ${primary_id}
+    @Column(${column_setting})
+    private ${data_type} ${field};
+

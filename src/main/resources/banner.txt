@@ -1,0 +1,12 @@
+ _____      _          _____                _         _______          _
+|  __ \    (_)        / ____|              | |       |__   __|        | |
+| |__) |__  _  ___   | |     _ __ ___  __ _| |_ ___     | | ___   ___ | |___
+|  ___/ _ \| |/ _ \  | |    | '__/ _ \/ _` | __/ _ \    | |/ _ \ / _ \| / __|
+| |  | (_) | | (_) | | |____| | |  __/ (_| | ||  __/    | | (_) | (_) | \__ \
+|_|   \___/| |\___/   \_____|_|  \___|\__,_|\__\___|    |_|\___/ \___/|_|___/
+          _/ |
+         |__/
+Design by :ErebusST     (version:1.0)
+
+Application Version: ${application.version}${application.formatted-version}
+Spring Boot Version: ${spring-boot.version}${spring-boot.formatted-version}

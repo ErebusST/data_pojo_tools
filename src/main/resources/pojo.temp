@@ -1,0 +1,17 @@
+package ${package};
+
+import lombok.Data;
+
+import javax.persistence.*;
+
+/**
+ * ${table_comment}
+
+ * @author ${author}
+ * @date ${date}
+ */
+@Entity
+@Table(name = "${table_name}")
+@Data
+public class ${java_name} {
+
