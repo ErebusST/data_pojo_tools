@@ -177,6 +177,7 @@ public class CreatePojo implements CommandLineRunner {
         String NUMERIC_PRECISION = toString(row.get("NUMERIC_PRECISION"));
         String NUMERIC_SCALE = toString(row.get("NUMERIC_SCALE"));
         String COLUMN_COMMENT = toString(row.get("COLUMN_COMMENT"));
+        String EXTRA = toString(row.get("EXTRA"));
 
         String data_type;
         Optional<Map.Entry<String, String>> first = dataType.entrySet().stream()
@@ -202,22 +203,38 @@ public class CreatePojo implements CommandLineRunner {
                 columnSetting.add(" scale = ".concat(NUMERIC_SCALE));
             }
         }
+        if(COLUMN_KEY.equalsIgnoreCase("UNI")){
+            columnSetting.add(" unique = true");
+        }else {
+            columnSetting.add(" unique = false");
+        }
+
         if (data_type.equalsIgnoreCase("string")) {
             columnSetting.add(" length = ".concat(CHARACTER_MAXIMUM_LENGTH));
         }
         String column_setting = columnSetting.stream().collect(Collectors.joining(","));
 
+        String generated_value;
+        if(EXTRA.equalsIgnoreCase("auto_increment")){
+            generated_value = "@GeneratedValue(strategy = GenerationType.AUTO)";
+        }else {
+            generated_value = "";
+        }
         String field = getFieldName(COLUMN_NAME);
         return column.stream().map(c -> {
             String text = new String(c.getBytes());
             text = text.replace("${column_comment}", COLUMN_COMMENT);
             text = text.replace("${primary_id}", primary_id);
+            if(generated_value.length() == 0&&text.contains("${generated_value}")){
+                return null;
+            }else {
+                text = text.replace("${generated_value}", generated_value);
+            }
             text = text.replace("${column_setting}", column_setting);
             text = text.replace("${data_type}", data_type);
             text = text.replace("${field}", field);
-
             return text;
-        }).collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
 
@@ -374,6 +391,7 @@ public class CreatePojo implements CommandLineRunner {
             sbSql.append("        NUMERIC_SCALE, ");
             sbSql.append("        COLUMN_TYPE, ");
             sbSql.append("        COLUMN_KEY, ");
+            sbSql.append("        EXTRA, ");
             sbSql.append("        COLUMN_COMMENT ");
             sbSql.append(" FROM information_schema.`TABLES` TABLES ");
             sbSql.append("          INNER JOIN (SELECT COLUMNS.IS_NULLABLE, ");
@@ -385,6 +403,7 @@ public class CreatePojo implements CommandLineRunner {
             sbSql.append("                             COLUMN_TYPE, ");
             sbSql.append("                             COLUMN_KEY, ");
             sbSql.append("                             COLUMN_COMMENT, ");
+            sbSql.append("                             EXTRA, ");
             sbSql.append("                             TABLE_NAME ");
             sbSql.append("                      FROM information_schema.`COLUMNS`) COLUMNS ");
             sbSql.append("                     ON COLUMNS.TABLE_NAME = TABLES.TABLE_NAME ");
