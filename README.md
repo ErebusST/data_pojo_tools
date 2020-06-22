@@ -4,7 +4,7 @@
 
 只支持mysql 配合 alias 设置全局命令
 
-需在待生成项目的路径下设置配置文件 文件名 pojo_config.json
+需在待生成项目根路径下设置配置文件：pojo_config.json
 
 可同时生成多个schema的pojo
 ```javascript
