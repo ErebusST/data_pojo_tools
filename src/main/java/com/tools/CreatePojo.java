@@ -208,7 +208,7 @@ public class CreatePojo implements CommandLineRunner {
             columnSetting.add(" unique = false");
         }
 
-        if (data_type.equalsIgnoreCase("string")) {
+        if (data_type.equalsIgnoreCase("string") && DATA_TYPE.contains("char")) {
             columnSetting.add(" length = ".concat(CHARACTER_MAXIMUM_LENGTH));
         }
         String column_setting = columnSetting.stream().collect(Collectors.joining(","));
