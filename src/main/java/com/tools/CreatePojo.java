@@ -10,7 +10,6 @@ package com.tools;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections.map.HashedMap;
@@ -43,6 +42,7 @@ public class CreatePojo implements CommandLineRunner {
     List<String> column;
     Map<String, String> dataType;
     String root_path;
+    Config config;
 
     @Override
     public void run(String... args) {
@@ -77,13 +77,12 @@ public class CreatePojo implements CommandLineRunner {
             dataType.put("double", "Double");
             dataType.put("float", "Float");
 
-            List<Config> configList = getConfig(root_path);
+            config = getConfig(root_path);
 
             pojo = getPojoTemplate();
             column = getColumnTemplate();
-
-            for (Config config : configList) {
-                write(config);
+            for (schema schema : config.getSchemas()) {
+                write(schema);
             }
             System.out.println("finished");
         } catch (Exception ex) {
@@ -91,15 +90,15 @@ public class CreatePojo implements CommandLineRunner {
         }
     }
 
-    private void write(Config config) {
+    private void write(schema schemaConfig) {
         try {
-            System.out.println(config.toString());
-            String ip = config.getIp();
-            String port = config.getPort();
-            String schema = config.getSchema();
-            String user = config.getSchema();
-            String password = config.getPassword();
-            String packageName = config.getPackageName();
+            System.out.println(schemaConfig.toString());
+            String ip = schemaConfig.getIp();
+            String port = schemaConfig.getPort();
+            String schema = schemaConfig.getSchema();
+            String user = schemaConfig.getSchema();
+            String password = schemaConfig.getPassword();
+            String packageName = schemaConfig.getPackageName();
 
             Assert.hasText(ip, "ip 必须配置");
             Assert.hasText(port, "port 必须配置");
@@ -108,7 +107,7 @@ public class CreatePojo implements CommandLineRunner {
             Assert.hasText(password, "password 必须配置");
             Assert.hasText(packageName, "package 必须配置");
 
-            List<Map<String, Object>> schemaInfo = getSchemaInfo(config);
+            List<Map<String, Object>> schemaInfo = getSchemaInfo(schemaConfig);
 
             schemaInfo.stream()
                     .collect(Collectors.groupingBy(map -> map.get("TABLE_NAME").toString()))
@@ -117,10 +116,10 @@ public class CreatePojo implements CommandLineRunner {
                     .forEach(entry -> {
                         String TABLE_NAME = toString(entry.getValue().get(0).get("TABLE_NAME"));
                         String java_name = getClassName(TABLE_NAME);
-                        String path = config.getPackageName().replace(".", "/");
+                        String path = schemaConfig.getPackageName().replace(".", "/");
                         path = root_path.concat("/src/main/java/").concat(path).concat("/");
 
-                        List<String> content = getPojo(config, entry);
+                        List<String> content = getPojo(schemaConfig, entry);
                         try {
                             Files.createDirectories(Paths.get(path));
                             path = path.concat(java_name).concat(".java");
@@ -143,7 +142,7 @@ public class CreatePojo implements CommandLineRunner {
 
     }
 
-    private List<String> getPojo(Config config, Map.Entry<String, List<Map<String, Object>>> entry) {
+    private List<String> getPojo(schema schemaConfig, Map.Entry<String, List<Map<String, Object>>> entry) {
         String userName = System.getProperty("user.name");
 
         Map<String, Object> pojoSetting = entry.getValue().get(0);
@@ -152,7 +151,7 @@ public class CreatePojo implements CommandLineRunner {
         String TABLE_COMMENT = toString(pojoSetting.get("TABLE_COMMENT"));
         List<String> content = pojo.stream().map(p -> {
             String text = new String(p.getBytes());
-            text = text.replace("${package}", config.getPackageName());
+            text = text.replace("${package}", schemaConfig.getPackageName());
             text = text.replace("${table_comment}", TABLE_COMMENT);
             text = text.replace("${author}", userName);
             text = text.replace("${date}", new Timestamp(System.currentTimeMillis()).toString());
@@ -203,9 +202,9 @@ public class CreatePojo implements CommandLineRunner {
                 columnSetting.add(" scale = ".concat(NUMERIC_SCALE));
             }
         }
-        if(COLUMN_KEY.equalsIgnoreCase("UNI")){
+        if (COLUMN_KEY.equalsIgnoreCase("UNI")) {
             columnSetting.add(" unique = true");
-        }else {
+        } else {
             columnSetting.add(" unique = false");
         }
 
@@ -215,9 +214,9 @@ public class CreatePojo implements CommandLineRunner {
         String column_setting = columnSetting.stream().collect(Collectors.joining(","));
 
         String generated_value;
-        if(EXTRA.equalsIgnoreCase("auto_increment")){
+        if (EXTRA.equalsIgnoreCase("auto_increment")) {
             generated_value = "@GeneratedValue(strategy = GenerationType.AUTO)";
-        }else {
+        } else {
             generated_value = "";
         }
         String field = getFieldName(COLUMN_NAME);
@@ -225,9 +224,9 @@ public class CreatePojo implements CommandLineRunner {
             String text = new String(c.getBytes());
             text = text.replace("${column_comment}", COLUMN_COMMENT);
             text = text.replace("${primary_id}", primary_id);
-            if(generated_value.length() == 0&&text.contains("${generated_value}")){
+            if (generated_value.length() == 0 && text.contains("${generated_value}")) {
                 return null;
-            }else {
+            } else {
                 text = text.replace("${generated_value}", generated_value);
             }
             text = text.replace("${column_setting}", column_setting);
@@ -243,40 +242,42 @@ public class CreatePojo implements CommandLineRunner {
     }
 
 
-    private List<Config> getConfig(String rootPath) throws IOException {
-        String config = rootPath + "/pojo_config.json";
-        System.out.println("config_path:" + config);
-        Path path = Paths.get(config);
+    private Config getConfig(String rootPath) throws IOException {
+        String configPath = rootPath + "/pojo_config.json";
+        System.out.println("config_path:" + configPath);
+        Path path = Paths.get(configPath);
         if (Files.notExists(path)) {
             StringBuilder comment = new StringBuilder();
-            comment.append("请在项目根目录配置 pojo_config.json 文件，格式如下：");
-            comment.append(" [ ").append(LINE_SEPARATOR);
-            comment.append("   { ").append(LINE_SEPARATOR);
-            comment.append("     \"ip\": \"1.1.1.1\", ").append(LINE_SEPARATOR);
-            comment.append("     \"port\": \"3306\", ").append(LINE_SEPARATOR);
-            comment.append("     \"user\": \"root\", ").append(LINE_SEPARATOR);
-            comment.append("     \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
-            comment.append("     \"schema\": \"master\", ").append(LINE_SEPARATOR);
-            comment.append("     \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
-            comment.append("   }, ").append(LINE_SEPARATOR);
-            comment.append("   { ").append(LINE_SEPARATOR);
-            comment.append("     \"ip\": \"1.1.1.1\", ").append(LINE_SEPARATOR);
-            comment.append("     \"port\": \"3306\", ").append(LINE_SEPARATOR);
-            comment.append("     \"user\": \"root\", ").append(LINE_SEPARATOR);
-            comment.append("     \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
-            comment.append("     \"schema\": \"master\", ").append(LINE_SEPARATOR);
-            comment.append("     \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
-            comment.append("   } ").append(LINE_SEPARATOR);
-            comment.append(" ] ").append(LINE_SEPARATOR);
+            comment.append("请在项目根目录配置 pojo_config.json 文件，格式如下：").append(LINE_SEPARATOR);
+            comment.append(" { ").append(LINE_SEPARATOR);
+            comment.append("   \"prefix\": \"\", ").append(LINE_SEPARATOR);
+            comment.append("   \"suffix\": \"Entity\", ").append(LINE_SEPARATOR);
+            comment.append("   \"schemas\": [ ").append(LINE_SEPARATOR);
+            comment.append("     { ").append(LINE_SEPARATOR);
+            comment.append("       \"ip\": \"127.0.0.1\", ").append(LINE_SEPARATOR);
+            comment.append("       \"port\": \"3306\", ").append(LINE_SEPARATOR);
+            comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
+            comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
+            comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
+            comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
+            comment.append("     }, ").append(LINE_SEPARATOR);
+            comment.append("     { ").append(LINE_SEPARATOR);
+            comment.append("       \"ip\": \"127.0.0.2\", ").append(LINE_SEPARATOR);
+            comment.append("       \"port\": \"3306\", ").append(LINE_SEPARATOR);
+            comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
+            comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
+            comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
+            comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
+            comment.append("     } ").append(LINE_SEPARATOR);
+            comment.append("   ] ").append(LINE_SEPARATOR);
+            comment.append(" } ").append(LINE_SEPARATOR);
             System.err.println(comment.toString());
 
-            throw new NoSuchFileException("path:" + config);
+            throw new NoSuchFileException("path:" + configPath);
         } else {
-            String setting = Files.readAllLines(Paths.get(config), Charset.forName("UTF-8")).stream().collect(Collectors.joining());
-            List<Config> configs =
-                    new Gson().fromJson(setting, new TypeToken<List<Config>>() {
-                    }.getType());
-            return configs;
+            String setting = Files.readAllLines(Paths.get(configPath), Charset.forName("UTF-8")).stream().collect(Collectors.joining());
+            Config config = new Gson().fromJson(setting, Config.class);
+            return config;
 
         }
 
@@ -285,6 +286,14 @@ public class CreatePojo implements CommandLineRunner {
     @Setter
     @Getter
     private class Config {
+        private String prefix;
+        private String suffix;
+        private List<schema> schemas;
+    }
+
+    @Setter
+    @Getter
+    private class schema {
         String ip = "127.0.0.1";
         String port = "3306";
         String schema = "schema";
@@ -353,7 +362,11 @@ public class CreatePojo implements CommandLineRunner {
     }
 
     private String getClassName(String tableName) {
-        return Arrays.stream(tableName.split("_")).map(StringUtils::capitalize).collect(Collectors.joining()).concat("Entity");
+        String prefix = config.getPrefix();
+        String suffix = config.getSuffix();
+        return StringUtils.capitalize(prefix)
+                .concat(Arrays.stream(tableName.split("_")).map(StringUtils::capitalize).collect(Collectors.joining()))
+                .concat(StringUtils.capitalize(suffix));
     }
 
     private String getFieldName(String filedName) {
@@ -361,12 +374,12 @@ public class CreatePojo implements CommandLineRunner {
     }
 
 
-    private List<Map<String, Object>> getSchemaInfo(Config config) throws SQLException, ClassNotFoundException {
-        String ip = config.ip;
-        String port = config.port;
-        String schema = config.schema;
-        String user = config.user;
-        String password = config.password;
+    private List<Map<String, Object>> getSchemaInfo(schema schemaConfig) throws SQLException, ClassNotFoundException {
+        String ip = schemaConfig.ip;
+        String port = schemaConfig.port;
+        String schema = schemaConfig.schema;
+        String user = schemaConfig.user;
+        String password = schemaConfig.password;
         String url = "jdbc:mysql://" + ip.trim() + ":" + port.trim() + "/" + schema.trim();
 
         System.out.println("connect to:" + url);
