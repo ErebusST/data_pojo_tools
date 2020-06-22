@@ -243,44 +243,48 @@ public class CreatePojo implements CommandLineRunner {
 
 
     private Config getConfig(String rootPath) throws IOException {
-        String configPath = rootPath + "/pojo_config.json";
-        System.out.println("config_path:" + configPath);
-        Path path = Paths.get(configPath);
-        if (Files.notExists(path)) {
-            StringBuilder comment = new StringBuilder();
-            comment.append("请在项目根目录配置 pojo_config.json 文件，格式如下：").append(LINE_SEPARATOR);
-            comment.append(" { ").append(LINE_SEPARATOR);
-            comment.append("   \"prefix\": \"\", ").append(LINE_SEPARATOR);
-            comment.append("   \"suffix\": \"Entity\", ").append(LINE_SEPARATOR);
-            comment.append("   \"schemas\": [ ").append(LINE_SEPARATOR);
-            comment.append("     { ").append(LINE_SEPARATOR);
-            comment.append("       \"ip\": \"127.0.0.1\", ").append(LINE_SEPARATOR);
-            comment.append("       \"port\": \"3306\", ").append(LINE_SEPARATOR);
-            comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
-            comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
-            comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
-            comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
-            comment.append("     }, ").append(LINE_SEPARATOR);
-            comment.append("     { ").append(LINE_SEPARATOR);
-            comment.append("       \"ip\": \"127.0.0.2\", ").append(LINE_SEPARATOR);
-            comment.append("       \"port\": \"3306\", ").append(LINE_SEPARATOR);
-            comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
-            comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
-            comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
-            comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
-            comment.append("     } ").append(LINE_SEPARATOR);
-            comment.append("   ] ").append(LINE_SEPARATOR);
-            comment.append(" } ").append(LINE_SEPARATOR);
-            System.err.println(comment.toString());
+        try {
+            String configPath = rootPath + "/pojo_config.json";
+            System.out.println("config_path:" + configPath);
+            Path path = Paths.get(configPath);
+            if (Files.notExists(path)) {
+                StringBuilder comment = new StringBuilder();
+                comment.append("请在项目根目录配置 pojo_config.json 文件，格式如下：").append(LINE_SEPARATOR);
+                comment.append("{ ").append(LINE_SEPARATOR);
+                comment.append("   \"prefix\": \"\", ").append(LINE_SEPARATOR);
+                comment.append("   \"suffix\": \"Entity\", ").append(LINE_SEPARATOR);
+                comment.append("   \"schemas\": [ ").append(LINE_SEPARATOR);
+                comment.append("     { ").append(LINE_SEPARATOR);
+                comment.append("       \"ip\": \"127.0.0.1\", ").append(LINE_SEPARATOR);
+                comment.append("       \"port\": \"3306\", ").append(LINE_SEPARATOR);
+                comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
+                comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
+                comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
+                comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
+                comment.append("     }, ").append(LINE_SEPARATOR);
+                comment.append("     { ").append(LINE_SEPARATOR);
+                comment.append("       \"ip\": \"127.0.0.2\", ").append(LINE_SEPARATOR);
+                comment.append("       \"port\": \"3306\", ").append(LINE_SEPARATOR);
+                comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
+                comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
+                comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
+                comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
+                comment.append("     } ").append(LINE_SEPARATOR);
+                comment.append("   ] ").append(LINE_SEPARATOR);
+                comment.append(" } ").append(LINE_SEPARATOR);
+                System.err.println(comment.toString());
 
-            throw new NoSuchFileException("path:" + configPath);
-        } else {
-            String setting = Files.readAllLines(Paths.get(configPath), Charset.forName("UTF-8")).stream().collect(Collectors.joining());
-            Config config = new Gson().fromJson(setting, Config.class);
-            return config;
+                throw new NoSuchFileException("path:" + configPath);
+            } else {
+                String setting = Files.readAllLines(Paths.get(configPath), Charset.forName("UTF-8")).stream().collect(Collectors.joining());
+                Config config = new Gson().fromJson(setting, Config.class);
+                return config;
 
+            }
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            throw ex;
         }
-
     }
 
     @Setter
