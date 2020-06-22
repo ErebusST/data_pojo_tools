@@ -8,23 +8,27 @@
 
 可同时生成多个schema的pojo
 ```javascript
-[
-  {
-    "ip": "127.0.0.1",
-    "port": "3306",
-    "user": "root",
-    "password": "123456",
-    "schema": "master",
-    "package": "com.ims.entity.po.master"
-  },
-  {
-    "ip": "127.0.0.2",
-    "port": "3306",
-    "user": "root",
-    "password": "123456",
-    "schema": "ims_test",
-    "package": "com.ims.entity.po.ims"
-  }
-]
+{
+  "prefix": "",
+  "suffix": "Entity",
+  "schemas": [
+    {
+      "ip": "127.0.0.1",
+      "port": "3306",
+      "user": "root",
+      "password": "xxxx",
+      "schema": "master1",
+      "package": "com.ims.entity.po.master"
+    },
+    {
+      "ip": "127.0.0.2",
+      "port": "3306",
+      "user": "root",
+      "password": "xxxx",
+      "schema": "master2",
+      "package": "com.ims.entity.po.master"
+    }
+  ]
+}
 ```
 生成的pojo 结合了 lombok 利用 @Data 简化 文件结构
