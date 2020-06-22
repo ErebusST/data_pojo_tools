@@ -160,7 +160,13 @@ public class CreatePojo implements CommandLineRunner {
             return text;
         }).collect(Collectors.toList());
 
+        List<String> columns = new ArrayList<>();
         for (Map<String, Object> column : entry.getValue()) {
+            String key = TABLE_NAME.concat(":") + column.get("COLUMN_NAME");
+            if (columns.contains(key)) {
+                continue;
+            }
+            columns.add(key);
             content.addAll(getColumn(column));
         }
         content.add("}");
