@@ -433,9 +433,12 @@ public class CreatePojo implements CommandLineRunner {
             sbSql.append("                             TABLE_NAME ");
             sbSql.append("                      FROM information_schema.`COLUMNS`) COLUMNS ");
             sbSql.append("                     ON COLUMNS.TABLE_NAME = TABLES.TABLE_NAME ");
-            sbSql.append(" WHERE TABLES.TABLE_SCHEMA = ?; ");
-            if (!StringUtils.isEmpty(schemaConfig.getFilter())) {
-                sbSql.append(" WHERE TABLES.TABLE_NAME IN (" + schemaConfig.getFilter() + "); ");
+            sbSql.append(" WHERE TABLES.TABLE_SCHEMA = ? ");
+            String filter = schemaConfig.getFilter();
+            if (!StringUtils.isEmpty(filter)) {
+                filter = Arrays.stream(filter.split(","))
+                        .map(str -> "'".concat(str).concat("'")).collect(Collectors.joining(","));
+                sbSql.append("  AND TABLES.TABLE_NAME IN (" + filter + "); ");
             }
             statement = conn.prepareStatement(sbSql.toString());
             statement.setString(1, schema);
@@ -502,4 +505,5 @@ public class CreatePojo implements CommandLineRunner {
         }
 
     }
+
 }
