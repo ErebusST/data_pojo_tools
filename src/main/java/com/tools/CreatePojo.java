@@ -266,7 +266,8 @@ public class CreatePojo implements CommandLineRunner {
                 comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
                 comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
                 comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
-                comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
+                comment.append("       \"package\": \"com.ims.entity.po.master\", ").append(LINE_SEPARATOR);
+                comment.append("       \"filter\": \"tb_user,tb_action\" ").append(LINE_SEPARATOR);
                 comment.append("     }, ").append(LINE_SEPARATOR);
                 comment.append("     { ").append(LINE_SEPARATOR);
                 comment.append("       \"ip\": \"127.0.0.2\", ").append(LINE_SEPARATOR);
@@ -274,7 +275,8 @@ public class CreatePojo implements CommandLineRunner {
                 comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
                 comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
                 comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
-                comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
+                comment.append("       \"package\": \"com.ims.entity.po.master\", ").append(LINE_SEPARATOR);
+                comment.append("       \"filter\": \"tb_user,tb_action\" ").append(LINE_SEPARATOR);
                 comment.append("     } ").append(LINE_SEPARATOR);
                 comment.append("   ] ").append(LINE_SEPARATOR);
                 comment.append(" } ").append(LINE_SEPARATOR);
@@ -311,6 +313,7 @@ public class CreatePojo implements CommandLineRunner {
         String password = "123456";
         @SerializedName("package")
         String packageName = "";
+        String filter = "";
 
         @Override
         public String toString() {
@@ -431,6 +434,9 @@ public class CreatePojo implements CommandLineRunner {
             sbSql.append("                      FROM information_schema.`COLUMNS`) COLUMNS ");
             sbSql.append("                     ON COLUMNS.TABLE_NAME = TABLES.TABLE_NAME ");
             sbSql.append(" WHERE TABLES.TABLE_SCHEMA = ?; ");
+            if (!StringUtils.isEmpty(schemaConfig.getFilter())) {
+                sbSql.append(" WHERE TABLES.TABLE_NAME IN (" + schemaConfig.getFilter() + "); ");
+            }
             statement = conn.prepareStatement(sbSql.toString());
             statement.setString(1, schema);
             resultSet = statement.executeQuery();
