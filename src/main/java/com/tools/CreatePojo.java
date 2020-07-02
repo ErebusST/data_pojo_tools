@@ -281,7 +281,7 @@ public class CreatePojo implements CommandLineRunner {
                 comment.append("   ] ").append(LINE_SEPARATOR);
                 comment.append(" } ").append(LINE_SEPARATOR);
                 System.err.println(comment.toString());
-                Files.write(Paths.get(configPath), column.toString().getBytes(Charset.forName("UTF-8")));
+                Files.write(Paths.get(configPath), comment.toString().getBytes(Charset.forName("UTF-8")));
                 throw new NoSuchFileException("path:" + configPath);
             } else {
                 String setting = Files.readAllLines(Paths.get(configPath), Charset.forName("UTF-8")).stream().collect(Collectors.joining());
