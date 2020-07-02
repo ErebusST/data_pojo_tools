@@ -79,6 +79,7 @@ public class CreatePojo implements CommandLineRunner {
 
             config = getConfig(root_path);
 
+
             pojo = getPojoTemplate();
             column = getColumnTemplate();
             for (schema schema : config.getSchemas()) {
@@ -275,13 +276,12 @@ public class CreatePojo implements CommandLineRunner {
                 comment.append("       \"user\": \"root\", ").append(LINE_SEPARATOR);
                 comment.append("       \"password\": \"xxxx\", ").append(LINE_SEPARATOR);
                 comment.append("       \"schema\": \"master\", ").append(LINE_SEPARATOR);
-                comment.append("       \"package\": \"com.ims.entity.po.master\", ").append(LINE_SEPARATOR);
-                comment.append("       \"filter\": \"tb_user,tb_action\" ").append(LINE_SEPARATOR);
+                comment.append("       \"package\": \"com.ims.entity.po.master\" ").append(LINE_SEPARATOR);
                 comment.append("     } ").append(LINE_SEPARATOR);
                 comment.append("   ] ").append(LINE_SEPARATOR);
                 comment.append(" } ").append(LINE_SEPARATOR);
                 System.err.println(comment.toString());
-
+                Files.write(Paths.get(configPath), column.toString().getBytes(Charset.forName("UTF-8")));
                 throw new NoSuchFileException("path:" + configPath);
             } else {
                 String setting = Files.readAllLines(Paths.get(configPath), Charset.forName("UTF-8")).stream().collect(Collectors.joining());
