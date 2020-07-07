@@ -69,6 +69,7 @@ public class CreatePojo implements CommandLineRunner {
             dataType.put("longtext", "String");
             dataType.put("char", "String");
             dataType.put("datetime", "java.sql.Timestamp");
+            dataType.put("timestamp", "java.sql.Timestamp");
             dataType.put("decimal", "java.math.BigDecimal");
             dataType.put("bit", "Boolean");
             dataType.put("int", "Integer");
@@ -421,7 +422,7 @@ public class CreatePojo implements CommandLineRunner {
             sbSql.append("        COLUMN_COMMENT ");
             sbSql.append(" FROM information_schema.`TABLES` TABLES ");
             sbSql.append("          INNER JOIN (SELECT COLUMNS.IS_NULLABLE, ");
-            sbSql.append("                             COLUMNS.DATA_TYPE, ");
+            sbSql.append("                TABLE_SCHEMA,COLUMNS.DATA_TYPE, ");
             sbSql.append("                             CHARACTER_MAXIMUM_LENGTH, ");
             sbSql.append("                             COLUMNS.COLUMN_NAME, ");
             sbSql.append("                             NUMERIC_PRECISION, ");
@@ -434,14 +435,17 @@ public class CreatePojo implements CommandLineRunner {
             sbSql.append("                      FROM information_schema.`COLUMNS`) COLUMNS ");
             sbSql.append("                     ON COLUMNS.TABLE_NAME = TABLES.TABLE_NAME ");
             sbSql.append(" WHERE TABLES.TABLE_SCHEMA = ? ");
+            sbSql.append("    AND COLUMNS.TABLE_SCHEMA = ? ");
             String filter = schemaConfig.getFilter();
             if (!StringUtils.isEmpty(filter)) {
                 filter = Arrays.stream(filter.split(","))
                         .map(str -> "'".concat(str).concat("'")).collect(Collectors.joining(","));
                 sbSql.append("  AND TABLES.TABLE_NAME IN (" + filter + "); ");
+                sbSql.append("  AND COLUMNS.TABLE_NAME IN (" + filter + "); ");
             }
             statement = conn.prepareStatement(sbSql.toString());
             statement.setString(1, schema);
+            statement.setString(2, schema);
             resultSet = statement.executeQuery();
             List<Map<String, Object>> data = getMapList(resultSet);
             return data;
