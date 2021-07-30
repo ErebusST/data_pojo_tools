@@ -158,6 +158,7 @@ public class CreatePojo implements CommandLineRunner {
             text = text.replace("${author}", userName);
             text = text.replace("${date}", new Timestamp(System.currentTimeMillis()).toString());
             text = text.replace("${table_name}", TABLE_NAME);
+            text = text.replace("${schema_name}", schemaConfig.schema);
             text = text.replace("${java_name}", java_name);
             return text;
         }).collect(Collectors.toList());
