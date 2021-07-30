@@ -11,7 +11,7 @@ import javax.persistence.*;
  * @date ${date}
  */
 @Entity
-@Table(name = "${table_name}" schema="${schema_name}}")
+@Table(name = "${table_name}" ,schema="${schema_name}")
 @Data
 public class ${java_name} {
 
