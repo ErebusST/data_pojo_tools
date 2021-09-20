@@ -83,7 +83,7 @@ public class CreatePojo implements CommandLineRunner {
 
             pojo = getPojoTemplate();
             column = getColumnTemplate();
-            for (schema schema : config.getSchemas()) {
+            for (Schema schema : config.getSchemas()) {
                 write(schema);
             }
             System.out.println("finished");
@@ -92,7 +92,7 @@ public class CreatePojo implements CommandLineRunner {
         }
     }
 
-    private void write(schema schemaConfig) {
+    private void write(Schema schemaConfig) {
         try {
             System.out.println(schemaConfig.toString());
             String ip = schemaConfig.getIp();
@@ -101,6 +101,8 @@ public class CreatePojo implements CommandLineRunner {
             String user = schemaConfig.getSchema();
             String password = schemaConfig.getPassword();
             String packageName = schemaConfig.getPackageName();
+            String fixPath = schemaConfig.getFixPath();
+
 
             Assert.hasText(ip, "ip 必须配置");
             Assert.hasText(port, "port 必须配置");
@@ -119,7 +121,7 @@ public class CreatePojo implements CommandLineRunner {
                         String TABLE_NAME = toString(entry.getValue().get(0).get("TABLE_NAME"));
                         String java_name = getClassName(TABLE_NAME);
                         String path = schemaConfig.getPackageName().replace(".", "/");
-                        path = root_path.concat("/src/main/java/").concat(path).concat("/");
+                        path = (root_path + fixPath).concat("/src/main/java/").concat(path).concat("/");
 
                         List<String> content = getPojo(schemaConfig, entry);
                         try {
@@ -144,7 +146,7 @@ public class CreatePojo implements CommandLineRunner {
 
     }
 
-    private List<String> getPojo(schema schemaConfig, Map.Entry<String, List<Map<String, Object>>> entry) {
+    private List<String> getPojo(Schema schemaConfig, Map.Entry<String, List<Map<String, Object>>> entry) {
         String userName = System.getProperty("user.name");
 
         Map<String, Object> pojoSetting = entry.getValue().get(0);
@@ -302,12 +304,12 @@ public class CreatePojo implements CommandLineRunner {
     private class Config {
         private String prefix;
         private String suffix;
-        private List<schema> schemas;
+        private List<Schema> schemas;
     }
 
     @Setter
     @Getter
-    private class schema {
+    private class Schema {
         String ip = "127.0.0.1";
         String port = "3306";
         String schema = "schema";
@@ -316,6 +318,17 @@ public class CreatePojo implements CommandLineRunner {
         @SerializedName("package")
         String packageName = "";
         String filter = "";
+        String fixPath = "";
+
+        public String getFixPath() {
+            fixPath = fixPath.trim();
+            if (!StringUtils.isEmpty(fixPath)) {
+                if (!fixPath.startsWith("/")) {
+                    fixPath = "/" + fixPath;
+                }
+            }
+            return fixPath;
+        }
 
         @Override
         public String toString() {
@@ -326,6 +339,7 @@ public class CreatePojo implements CommandLineRunner {
                     ", user='" + user + '\'' +
                     ", password='" + password + '\'' +
                     ", packageName='" + packageName + '\'' +
+                    ", fixPath='" + fixPath + '\'' +
                     '}';
         }
     }
@@ -389,7 +403,7 @@ public class CreatePojo implements CommandLineRunner {
     }
 
 
-    private List<Map<String, Object>> getSchemaInfo(schema schemaConfig) throws SQLException, ClassNotFoundException {
+    private List<Map<String, Object>> getSchemaInfo(Schema schemaConfig) throws SQLException, ClassNotFoundException {
         String ip = schemaConfig.ip;
         String port = schemaConfig.port;
         String schema = schemaConfig.schema;
