@@ -101,7 +101,7 @@ public class CreatePojo implements CommandLineRunner {
             String user = schemaConfig.getSchema();
             String password = schemaConfig.getPassword();
             String packageName = schemaConfig.getPackageName();
-            String fixPath = schemaConfig.getFixPath();
+            String module = schemaConfig.getModule();
 
 
             Assert.hasText(ip, "ip 必须配置");
@@ -121,7 +121,7 @@ public class CreatePojo implements CommandLineRunner {
                         String TABLE_NAME = toString(entry.getValue().get(0).get("TABLE_NAME"));
                         String java_name = getClassName(TABLE_NAME);
                         String path = schemaConfig.getPackageName().replace(".", "/");
-                        path = (root_path + fixPath).concat("/src/main/java/").concat(path).concat("/");
+                        path = (root_path + module).concat("/src/main/java/").concat(path).concat("/");
 
                         List<String> content = getPojo(schemaConfig, entry);
                         try {
@@ -318,16 +318,16 @@ public class CreatePojo implements CommandLineRunner {
         @SerializedName("package")
         String packageName = "";
         String filter = "";
-        String fixPath = "";
+        String module = "";
 
-        public String getFixPath() {
-            fixPath = fixPath.trim();
-            if (!StringUtils.isEmpty(fixPath)) {
-                if (!fixPath.startsWith("/")) {
-                    fixPath = "/" + fixPath;
+        public String getModule() {
+            module = module.trim();
+            if (!StringUtils.isEmpty(module)) {
+                if (!module.startsWith("/")) {
+                    module = "/" + module;
                 }
             }
-            return fixPath;
+            return module;
         }
 
         @Override
@@ -339,7 +339,7 @@ public class CreatePojo implements CommandLineRunner {
                     ", user='" + user + '\'' +
                     ", password='" + password + '\'' +
                     ", packageName='" + packageName + '\'' +
-                    ", fixPath='" + fixPath + '\'' +
+                    ", fixPath='" + module + '\'' +
                     '}';
         }
     }
