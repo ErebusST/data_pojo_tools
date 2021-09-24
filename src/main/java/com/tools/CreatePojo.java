@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
  * @date 2020/6/21 16:19
  */
 @Component
+@Slf4j
 public class CreatePojo implements CommandLineRunner {
     public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
     List<String> pojo;
@@ -141,6 +143,7 @@ public class CreatePojo implements CommandLineRunner {
         } catch (ClassNotFoundException ex) {
             System.err.println(ex.getMessage());
         } catch (Exception ex) {
+            log.info(ex.getMessage());
             System.err.println(ex.getMessage());
         }
 
@@ -321,6 +324,9 @@ public class CreatePojo implements CommandLineRunner {
         String module = "";
 
         public String getModule() {
+            if (Objects.isNull(module) || equalsIgnoreCase(module, "null")) {
+                module = "";
+            }
             module = module.trim();
             if (!StringUtils.isEmpty(module)) {
                 if (!module.startsWith("/")) {
@@ -332,14 +338,14 @@ public class CreatePojo implements CommandLineRunner {
 
         @Override
         public String toString() {
-            return "Config{" +
+            return "Schema{" +
                     "ip='" + ip + '\'' +
                     ", port='" + port + '\'' +
                     ", schema='" + schema + '\'' +
                     ", user='" + user + '\'' +
                     ", password='" + password + '\'' +
                     ", packageName='" + packageName + '\'' +
-                    ", fixPath='" + module + '\'' +
+                    ", module='" + module + '\'' +
                     '}';
         }
     }
@@ -388,6 +394,12 @@ public class CreatePojo implements CommandLineRunner {
             System.err.println("模板文件丢失");
             throw new NoSuchFileException("file:".concat(path).concat(" is missing."));
         }
+    }
+
+    private boolean equalsIgnoreCase(String str1, String str2) {
+        str1 = Objects.nonNull(str1) ? str1 : "";
+        str2 = Objects.nonNull(str2) ? str2 : "";
+        return str1.equalsIgnoreCase(str2);
     }
 
     private String getClassName(String tableName) {
