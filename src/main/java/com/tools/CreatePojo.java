@@ -324,16 +324,16 @@ public class CreatePojo implements CommandLineRunner {
         String module = "";
 
         public String getModule() {
-            if (Objects.isNull(module) || equalsIgnoreCase(module, "null")) {
-                module = "";
+            if (Objects.isNull(this.module) || equalsIgnoreCase(this.module, "null")) {
+                this.module = "";
             }
-            module = module.trim();
-            if (!StringUtils.isEmpty(module)) {
-                if (!module.startsWith("/")) {
-                    module = "/" + module;
+            this.module = this.module.trim();
+            if (!StringUtils.isEmpty(this.module)) {
+                if (!this.module.startsWith("/")) {
+                    this.module = "/" +this. module;
                 }
             }
-            return module;
+            return this.module;
         }
 
         @Override
@@ -396,7 +396,7 @@ public class CreatePojo implements CommandLineRunner {
         }
     }
 
-    private boolean equalsIgnoreCase(String str1, String str2) {
+    private static boolean equalsIgnoreCase(String str1, String str2) {
         str1 = Objects.nonNull(str1) ? str1 : "";
         str2 = Objects.nonNull(str2) ? str2 : "";
         return str1.equalsIgnoreCase(str2);
