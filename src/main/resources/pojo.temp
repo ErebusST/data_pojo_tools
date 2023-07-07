@@ -3,6 +3,7 @@ package ${package};
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * ${table_comment}
@@ -13,5 +14,5 @@ import javax.persistence.*;
 @Entity
 @Table(name = "${table_name}" ,schema="${schema_name}")
 @Data
-public class ${java_name} {
+public class ${java_name} implements Serializable{
 

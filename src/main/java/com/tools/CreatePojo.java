@@ -20,6 +20,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
@@ -115,7 +116,23 @@ public class CreatePojo implements CommandLineRunner {
 
             List<Map<String, Object>> schemaInfo = getSchemaInfo(schemaConfig);
 
+            List<String> skip = schemaConfig.getSkip();
+
             schemaInfo.stream()
+                    .filter(item -> {
+                        if (ObjectUtils.isEmpty(skip)) {
+                            return true;
+                        }
+                        String tableName = item.get("TABLE_NAME").toString();
+                        return skip.stream().noneMatch(str -> {
+                            if (StringUtils.endsWithIgnoreCase(str.trim(), "%")) {
+                                String temp = str.substring(0, str.length() - 1);
+                                return StringUtils.startsWithIgnoreCase(tableName, temp);
+                            } else {
+                                return tableName.equalsIgnoreCase(str);
+                            }
+                        });
+                    })
                     .collect(Collectors.groupingBy(map -> map.get("TABLE_NAME").toString()))
                     .entrySet()
                     .stream()
@@ -322,6 +339,7 @@ public class CreatePojo implements CommandLineRunner {
         String packageName = "";
         String filter = "";
         String module = "";
+        List<String> skip = new ArrayList<>();
 
         public String getModule() {
             if (Objects.isNull(this.module) || equalsIgnoreCase(this.module, "null")) {
@@ -330,7 +348,7 @@ public class CreatePojo implements CommandLineRunner {
             this.module = this.module.trim();
             if (!StringUtils.isEmpty(this.module)) {
                 if (!this.module.startsWith("/")) {
-                    this.module = "/" +this. module;
+                    this.module = "/" + this.module;
                 }
             }
             return this.module;
@@ -421,7 +439,7 @@ public class CreatePojo implements CommandLineRunner {
         String schema = schemaConfig.schema;
         String user = schemaConfig.user;
         String password = schemaConfig.password;
-        String url = "jdbc:mysql://" + ip.trim() + ":" + port.trim() + "/" + schema.trim();
+        String url = "jdbc:mysql://" + ip.trim() + ":" + port.trim() + "/" + schema.trim() + "?useSSL=false";
 
         System.out.println("connect to:" + url);
         Connection conn = null;
@@ -478,6 +496,7 @@ public class CreatePojo implements CommandLineRunner {
             return data;
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw ex;
         } finally {
             if (conn != null) {
